@@ -1,0 +1,16 @@
+{
+  "title": "Email Extractor Input",
+  "description": "Enter one or multiple website URLs to extract emails from. Separate URLs with a new line, comma, or space.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["URL"],
+  "properties": {
+    "URL": {
+      "title": "Website URL(s)",
+      "type": "string",
+      "description": "Add one or multiple website URLs. Separate URLs using a new line, comma, or space.",
+      "editor": "textarea",
+      "default": "https://www.apify.com"
+    }
+  }
+}

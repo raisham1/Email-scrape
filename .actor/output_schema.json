@@ -1,0 +1,27 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Email Extractor Output",
+  "description": "Output per URL containing extracted email addresses.",
+  "type": "object",
+  "properties": {
+    "url": {
+      "title": "Website URL",
+      "type": "string",
+      "description": "The website that was scanned.",
+      "template": "https://example.com"
+    },
+    "emails": {
+      "title": "Extracted Emails",
+      "type": "string",
+      "description": "Emails found (JSON string).",
+      "template": "[\"info@example.com\", \"support@example.com\"]"
+    },
+    "count": {
+      "title": "Email Count",
+      "type": "string",
+      "description": "Number of emails found (as text).",
+      "template": "2"
+    }
+  },
+  "required": ["url", "emails", "count"]
+}

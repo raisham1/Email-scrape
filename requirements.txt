@@ -1,0 +1,4 @@
+apify
+beautifulsoup4
+requests
+tqdm
