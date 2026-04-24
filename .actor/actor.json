@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "Scrape Emails Websites",
+  "title": "Scrape Emails from Static Websites",
+  "description": "Extracts email addresses from one or multiple static websites using Requests and BeautifulSoup.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "python-start"
+  },
+  "input": "./input_schema.json",
+  "output": "./output_schema.json",
+  "dockerfile": "./Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Scraped Emails Overview",
+          "transformation": {
+            "fields": ["url", "emails", "count"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "url": {
+                "label": "Website URL",
+                "format": "link"
+              },
+              "emails": {
+                "label": "Extracted Emails",
+                "format": "array"
+              },
+              "count": {
+                "label": "Email Count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

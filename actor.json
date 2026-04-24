@@ -1,0 +1,23 @@
+{
+  "name": "scrape-emails-websites",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": true,
+  "input": {
+    "schema": {
+      "title": "Email Scraper Input",
+      "type": "object",
+      "properties": {
+        "websiteUrls": {
+          "title": "Website URLs",
+          "type": "array",
+          "description": "Enter a list of website URLs to extract emails from.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["websiteUrls"]
+    }
+  }
+}
