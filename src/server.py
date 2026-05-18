@@ -1,10 +1,11 @@
 import json
+import hmac
 import os
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-from .scraper import scrape_urls
+from .scraper import clear_scrape_cache, scrape_urls
 
 API_VERSION = "0.1.0"
 
@@ -21,6 +22,21 @@ def _json_response(handler: BaseHTTPRequestHandler, status: int, payload: dict) 
 def _is_valid_url(value: str) -> bool:
     parsed = urlparse(value)
     return bool(parsed.scheme and parsed.netloc)
+
+
+def _as_bool(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+
+    return False
+
+
+def _is_cache_admin(handler: BaseHTTPRequestHandler) -> bool:
+    expected_token = os.getenv("CACHE_ADMIN_TOKEN")
+    provided_token = handler.headers.get("X-Cache-Admin-Token", "")
+    return bool(expected_token) and hmac.compare_digest(provided_token, expected_token)
 
 
 class RapidAPIHandler(BaseHTTPRequestHandler):
@@ -42,6 +58,7 @@ class RapidAPIHandler(BaseHTTPRequestHandler):
                         "POST /validate-url",
                         "POST /scrape-email",
                         "POST /scrape-emails",
+                        "POST /cache/clear",
                     ],
                 },
             )
@@ -67,6 +84,22 @@ class RapidAPIHandler(BaseHTTPRequestHandler):
             _json_response(self, HTTPStatus.BAD_REQUEST, {"error": "Invalid JSON body"})
             return
 
+        if self.path == "/cache/clear":
+            if not _is_cache_admin(self):
+                _json_response(self, HTTPStatus.FORBIDDEN, {"error": "Forbidden"})
+                return
+
+            cleared_count = clear_scrape_cache()
+            _json_response(
+                self,
+                HTTPStatus.OK,
+                {
+                    "success": True,
+                    "cleared": cleared_count,
+                },
+            )
+            return
+
         if self.path == "/validate-url":
             raw_url = payload.get("url", "")
             is_valid = isinstance(raw_url, str) and _is_valid_url(raw_url)
@@ -90,7 +123,12 @@ class RapidAPIHandler(BaseHTTPRequestHandler):
                 )
                 return
 
-            results = scrape_urls([raw_url], delay_range=(0.0, 0.0))
+            results = scrape_urls(
+                [raw_url],
+                verify=_as_bool(payload.get("verify", False)),
+                js_render=_as_bool(payload.get("js_render", False)),
+                delay_range=(0.0, 0.0),
+            )
             _json_response(
                 self,
                 HTTPStatus.OK,
@@ -108,7 +146,12 @@ class RapidAPIHandler(BaseHTTPRequestHandler):
 
         raw_urls = payload.get("URL", payload.get("websiteUrls", []))
         urls = raw_urls if isinstance(raw_urls, list) else str(raw_urls)
-        results = scrape_urls(urls, delay_range=(0.0, 0.0))
+        results = scrape_urls(
+            urls,
+            verify=_as_bool(payload.get("verify", False)),
+            js_render=_as_bool(payload.get("js_render", False)),
+            delay_range=(0.0, 0.0),
+        )
 
         _json_response(
             self,
